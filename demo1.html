@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Vanilla JS Dialog Plugin Demo</title>
+  <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js" integrity="sha512-rdhY3cbXURo13l/WU9VlaRyaIYeJ/KBakckXIvJNAQde8DgpOmE+eZf7ha4vdqVjTtwQt69bD2wH2LXob/LB7Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js" integrity="sha512-ZFn1l/cmJ8LLHH5TWJhNnV1PCQiNqBD+TFitO1ECtYJuQvn8zhhrzvQyYXLrb5cR7gzmLTkgka8DDR7fIAO9MQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      
+    <script src="./vanilla-js-dialog.js"></script>
+    <style>
+pre {
+	font-size: 80%;
+	padding: 12px 64px;
+	background: rgba(127, 127, 127, 0.05);
+	border: 1px solid currentColor;
+	border-radius: 12px;
+	margin: 12px;
+	user-select: auto;
+	cursor: default;
+}
+
+.dark body {
+	background-color: #333333;
+	color: #eeeeee;
+}
+
+.dark pre {
+	background: #000000;
+}
+
+body {
+	padding: 32px;
+}
+
+.dark pre .hljs-comment {
+	color: #9d7474;
+}
+    </style>
+</head>
+<body>
+	<h1>Vanilla JS Dialog Plugin Demo</h1>
+
+	<p>The Vanilla JS Dialog plugin is a lightweight, easy-to-use plugin for creating custom dialog boxes on your website. The plugin is written in pure JavaScript, which means that it does not require any external libraries or frameworks to work.</p>
+
+	<h2>Features</h2>
+	<ul>
+		<li>Customizable dialog box content</li>
+		<!--<li>Support for multiple dialog boxes on the same page</li>-->
+		<li>Option to display a backdrop overlay</li>
+		<li>Support for custom CSS styling</li>
+		<li>Lightweight and fast</li>
+	</ul>
+
+	<h2>Usage</h2>
+	<ol>
+		<li>Include the plugin JavaScript file and CSS file in your HTML document.</li>
+		<li>Create a new instance of the dialog box with the desired content and options.</li>
+		<li>Call the <code>show()</code> method on the dialog instance to display the dialog box.</li>
+		<li>Call the <code>dismiss()</code> method on the dialog instance to hide the dialog box.</li>
+	</ol>
+
+
+	<h2>Open Dialog Button</h2>
+
+	<p><button id="open-dialog-btn">Open Dialog</button></p>
+  <p><span><input id="dismiss-by-backdrop" type="checkbox" checked />Dismiss By Backdrop</span></p>
+  <p><span><input id="dark-theme" type="checkbox" />Dark Theme</span></p>
+ 
+     
+
+	<h2>Example Code</h2>
+	<p>Here's an example of how to create a simple dialog box using the Vanilla JS Dialog plugin:</p>
+
+	<pre><code class="language-js">
+
+
+
+    const _themeProps_ = {
+      dialogBackgroundColor: '#f6f6f6',
+      dialogBackgroundColorDark: '#23252a',
+      backdropColor: '#b5b5b568',
+      textColor: '#111111',
+      textColorDark: '#f0f3f4',
+      zIndex: 60000,
+      fontSize: '10pt',
+      dialogMinWidth: '320px',
+      dialogMinHeight: '240px',
+  
+  };
+  
+  /**
+   * The customized VanillaJSDialog which is extended from VanillaJSDialog
+   * @class
+   * @import {VanillaJSDialog} from "./vanilla-js-dialog.js"
+   */
+  class VJSD extends VanillaJSDialog {
+  
+      get themeProps() {
+          return _themeProps_
+      }
+
+      isDarkTheme() {
+          return document.documentElement.classList.contains('dark');
+      }
+
+      onBeforeShow(){
+        // you might clear the inputs here
+        // `return false` if it is not allowed to show
+      }
+  
+      onShow(){
+        // you might clear the inputs here
+      }
+
+      onBeforeDismiss(){
+        // you might clear the inputs here
+        // `return false` if it is not allowed to dismiss
+      }
+
+      onDismiss(){
+        // you might clear the inputs here
+      }
+  
+      onFirstCreation() {
+  
+          const S = this.S; /* this is the global method */
+  
+          /* on top of the setup function, override the icon widget on global method */
+          S.widgets.icon = (iconTag) => {
+              return S.ce('i', { className: 'vjsd-icon fa-solid fa-' + iconTag });
+          }
+          /* you might also overide `S.importCSS` by the use of Userscript Manager's import */
+          S.importCSS(
+              'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css#sha512=SgaqKKxJDQ/tAUAAXzvxZz33rmn7leYDYfBP+YoMRSENhf3zJyx3SBASt/OfeQwBHA1nxMis7mM3EV/oYT6Fdw==',
+              // 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css',
+              'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css#sha512=yDUXOUWwbHH4ggxueDnC5vJv4tmfySpVdIcN1LksGZi8W8EVZv4uKGrQc0pVf66zS7LDhFJM7Zdeow1sw1/8Jw=='
+          );
+  
+          /* load CSS files, etc - You might overide the `getTheme()` in VanillaJSDialog */
+          this.themeSetup();
+      }
+  
+      /* init is called after setup function is called */
+      init() {
+          const S = this.S; /* this is the global method */
+  
+          const es = this.es; /* this is a store for HTMLElements binded to this dialog */
+  
+          es.dialog = S.ce('div', {
+              className: 'vjsd-dialog'
+          }, {
+              '__vjsd__': ''
+          });
+  
+  
+  
+          es.dialog.append(
+              es.header = S.ce('div', {
+                  className: 'vjsd-dialog-header vjsd-hflex'
+              }),
+              es.body = S.ce('div', {
+                  className: 'vjsd-dialog-body vjsd-gap-2 vjsd-overscroll-none vjsd-vflex'
+              }),
+              es.footer = S.ce('div', {
+                  className: 'vjsd-dialog-footer vjsd-hflex'
+              }),
+  
+          );
+  
+          es.header.append(
+              S.widgets.icon('circle-info', (a) => {
+  
+              }),
+              S.c(S.widgets.title('New User'), 'vjsd-flex-fill'),
+              S.widgets.buttonIcon('square-xmark', {
+                  'vjsd-clickable': '#dialogXmark'
+              })
+          );
+  
+          const checkBoxChanged = () => {
+              let elmChoice1 = [...document.getElementsByName('choice1')].filter(e => e.checked).map(e => e.value);
+              let elmChoice2 = [...document.getElementsByName('choice2')].filter(e => e.checked).map(e => e.value);
+  
+              es.checkboxSelectionDisplay.textContent = `choice1: ${elmChoice1.join(',')}; choice2 : ${elmChoice2.join(',')}`;
+          }
+  
+          es.body.append(
+              S.widgets.iconTextClear((container, labelSpan, inputText, xmark) => {
+                  es.input1 = inputText;
+              }),
+              S.widgets.labeledCheckbox('vjsd-checkbox1 vjsd-checkbox-tick', 'Item A', (elmLabel, elmInput) => {
+                  elmInput.name = 'choice1';
+                  elmInput.value = 'itemA';
+                  es.checkbox1 = elmInput;
+                  elmInput.addEventListener('change', checkBoxChanged)
+              }),
+              S.widgets.labeledCheckbox('vjsd-checkbox1 vjsd-checkbox-tick', 'Item B', (elmLabel, elmInput) => {
+                  elmInput.name = 'choice1';
+                  elmInput.value = 'itemB';
+                  es.checkbox2 = elmInput;
+                  elmInput.addEventListener('change', checkBoxChanged)
+              }),
+              S.widgets.labeledRadio('vjsd-checkbox1 vjsd-checkbox-square', 'Item C', (elmLabel, elmInput) => {
+                  elmInput.name = 'choice2';
+                  elmInput.value = 'itemC';
+                  es.checkbox3 = elmInput;
+                  elmInput.addEventListener('change', checkBoxChanged)
+              }),
+              S.widgets.labeledRadio('vjsd-checkbox1 vjsd-checkbox-square', 'Item D', (elmLabel, elmInput) => {
+                  elmInput.name = 'choice2';
+                  elmInput.value = 'itemD';
+                  es.checkbox4 = elmInput;
+                  elmInput.addEventListener('change', checkBoxChanged)
+              }),
+              S.widgets.textbox((textbox) => {
+                  es.textarea1 = textbox;
+              }),
+              es.checkboxSelectionDisplay = S.widgets.checkboxSelectionDisplay()
+          );
+  
+  
+          const onXMarkClicked = () => {
+              this.dismiss();
+          }
+  
+          const onClearClicked = () => {
+              es.input1.value = '';
+              es.textarea1.value = '';
+              es.checkbox1.checked = false;
+              es.checkbox2.checked = false;
+              es.checkbox3.checked = false;
+              es.checkbox4.checked = false;
+              checkBoxChanged();
+          }
+  
+          const onConfirmClicked = () => {
+  
+              if (es.input1.value == '' || es.textarea1.value == '') {
+                  alert(`
+            Input(s) cannot be empty.
+            `.replace(/[\x20]+/g, ' '));
+                  return;
+              }
+  
+              alert(`
+          Confirm is clicked.
+          Input: ${es.input1.value}
+          TextArea: ${es.textarea1.value}
+          `.replace(/[\x20]+/g, ' '));
+  
+              this.dismiss();
+          }
+  
+          const onCancelClicked = () => {
+  
+              alert(`
+          Cancel is clicked.
+          Input: ${es.input1.value}
+          TextArea: ${es.textarea1.value}
+          `.replace(/[\x20]+/g, ' '));
+  
+              this.dismiss();
+  
+  
+          }
+  
+  
+          es.footer.append(
+              es.clearButton = S.widgets.button('Clear', {
+                  'vjsd-clickable': '#clear'
+              }),
+              S.widgets.space(),
+              S.widgets.button('Cancel', {
+                  'vjsd-clickable': '#cancel'
+              }),
+              S.widgets.button('Confirm', {
+                  'vjsd-clickable': '#confirm'
+              }),
+          )
+  
+          this.clickable('#cancel', onCancelClicked)
+          this.clickable('#clear', onClearClicked)
+          this.clickable('#confirm', onConfirmClicked)
+  
+          this.clickable('#dialogXmark', onXMarkClicked);
+  
+          /* 
+            those components generated by S.widgets.XXX are without controllers
+            you need to define how they interactive with the UIs.
+          */
+          this.clickable('.xmark1', (evt) => {
+              /* find the related element instead of using the referenced element in this.es */
+              let input = S.query(evt.target, '.vjsd-custom-widget', '.vjsd-input');
+              input.value = '';
+              input.focus();
+          });
+  
+  
+  
+          this.backdrop = 'dismiss';
+  
+  
+          document.body.appendChild(es.dialog)
+  
+  
+  
+      }
+  
+  }
+  
+  setTimeout(() => {
+      VJSD.setup1();
+      let dialog1 = new VJSD();
+  
+  
+      let openDialogBtn = document.querySelector('#open-dialog-btn');
+  
+      if (openDialogBtn !== null) {
+          openDialogBtn.addEventListener('click', () => {
+              dialog1.backdrop = document.querySelector('#dismiss-by-backdrop').checked ? 'dismiss' : 'block'
+              dialog1.show()
+          });
+      } else {
+          dialog1.backdrop = 'dismiss';
+          dialog1.show();
+      }
+  
+  
+  
+  }, 430)
+
+
+
+</code></pre>
+
+	<!-- Initialize the plugin -->
+	<script>
+
+
+
+		hljs.highlightAll();
+    let jsContent =document.querySelector('pre').textContent;
+    let script = document.createElement('script');
+    script.textContent=jsContent;
+    jsContent = jsContent.replace(/script|window|navigator|cookie|localStorage|Storage|top/,'***********'); // prevent malware hack
+    document.body.appendChild(script);
+    
+    /**
+     * 
+     * 
+     * @import {VanillaJSDialog} from "./vanilla-js-dialog.js" 
+     * */
+    const S =  VanillaJSDialog.S;
+    const [ lightThemeCSS, darkThemeCSS]=S.importCSS(
+      'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/base16/harmonic16-light.min.css',
+      'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/base16/chalk.min.css'
+      );
+
+    let f = (e)=>{
+
+      let checked = e.checked;
+      document.head.appendChild(checked?darkThemeCSS:lightThemeCSS);
+      document.documentElement.classList.toggle('dark', checked);
+    }
+    document.querySelector('#dark-theme').addEventListener('change',(evt)=>{
+
+      
+      lightThemeCSS.remove();
+      darkThemeCSS.remove();
+      f(evt.target);
+      
+    })
+    f(document.querySelector('#dark-theme'));
+    
+	</script>
+</body>
+</html>
