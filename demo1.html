@@ -9,7 +9,7 @@
       
       <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js" integrity="sha512-ZFn1l/cmJ8LLHH5TWJhNnV1PCQiNqBD+TFitO1ECtYJuQvn8zhhrzvQyYXLrb5cR7gzmLTkgka8DDR7fIAO9MQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
       
-    <script src="./vanilla-js-dialog.js"></script>
+    <script src="./dist/vanilla-js-dialog-0.1.1.min.js"></script>
     <style>
 pre {
 	font-size: 80%;
@@ -127,6 +127,45 @@ body {
       onFirstCreation() {
   
           const S = this.S; /* this is the global method */
+
+          S.widgets = {
+
+            // custom widgets
+
+            checkboxSelectionDisplay(f) {
+              let elm = S.ce('div', { className: 'vjsd-custom-widget' })
+              if (f instanceof Function) f(elm);
+              return elm;
+            },
+
+            textbox(f) {
+              let elm = S.ce('textarea', { className: 'vjsd-custom-widget sample-textbox' })
+              if (f instanceof Function) f(elm);
+              return elm;
+            },
+
+            iconTextClear(f) {
+
+              let container = S.ce("div", { className: "vjsd-custom-widget vjsd-hflex vjsd-gap-3" });
+
+              let labelSpan = this.span('Input:');
+              let inputText = this.inputText((elm) => {
+                elm.classList.add('vjsd-flex-fill')
+              });
+              let xmark = this.buttonIcon('xmark');
+              xmark.setAttribute('vjsd-clickable', '.xmark1')
+              container.append(
+                labelSpan,
+                inputText,
+                xmark
+              );
+
+              if (f instanceof Function) f(container, labelSpan, inputText, xmark);
+
+              return container
+            }
+
+          };
   
           /* on top of the setup function, override the icon widget on global method */
           S.widgets.icon = (iconTag) => {
@@ -174,7 +213,9 @@ body {
               S.widgets.icon('circle-info', (a) => {
   
               }),
-              S.c(S.widgets.title('New User'), 'vjsd-flex-fill'),
+              S.widgets.title('New User', {
+                className :  'vjsd-flex-fill'
+              }),
               S.widgets.buttonIcon('square-xmark', {
                   'vjsd-clickable': '#dialogXmark'
               })
@@ -345,7 +386,7 @@ body {
     let jsContent =document.querySelector('pre').textContent;
     let script = document.createElement('script');
     script.textContent=jsContent;
-    jsContent = jsContent.replace(/script|window|navigator|cookie|localStorage|Storage|top/,'***********'); // prevent malware hack
+    jsContent = jsContent.replace(/script|window|navigator|cookie|localStorage|Storage|top|http\:|pre|code/,'***********'); // prevent malware hack
     document.body.appendChild(script);
     
     /**

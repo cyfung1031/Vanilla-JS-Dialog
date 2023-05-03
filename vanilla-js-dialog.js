@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-/* version: 0.1.0 */
+/* version: 0.1.1 */
 const VanillaJSDialog = (function pluginVanillaJSDialog() {
   'strict';
 
@@ -40,13 +40,6 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
 
   };
 
-  // (\$\{)\n\s*(\$\.\w+)\n\s*(\})\n\s*
-  // $1$2$3
-  // (\$\{)\n\s*(\$\.\w+|[\$\.\w\s\-]+)\n\s*(\})\n\s*
-  // $1$2$3
-
-  // \b([\w\-]+)\s*:([\w\d\(\)'"]+);$
-  // $1: $2;
 
   /* https://www.freeformatter.com/css-beautifier.html */
   const _cssForThemeProps_ = ($) =>
@@ -524,29 +517,6 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
 
     /**
      * 
-     * @param {HTMLElement} elm 
-     * @param  {...string} className 
-     * @returns 
-     */
-    c(elm, ...className) {
-      elm.classList.add(...className);
-      return elm;
-    }
-
-
-    /**
-     * 
-     * @param {HTMLElement} elm 
-     * @param  {...string} className 
-     * @returns 
-     */
-    d(elm, ...className) {
-      elm.classList.remove(...className);
-      return elm;
-    }
-
-    /**
-     * 
      * @param {string} t 
      * @param {string} [id] 
      * @returns 
@@ -575,8 +545,9 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
      * @returns
      * */
     st(elm, ...args) {
+      console.assert(elm instanceof HTMLElement, 'HTMLElement shall be required.');
+      if (args.length === 0) return;
       if ('length' in args[0]) args = args[0];
-
 
       let f = null;
       for (const arg of args) {
@@ -585,14 +556,14 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
         } else if (typeof arg == 'object') {
           const obj = arg;
           for (const k of Object.keys(obj)) {
-            if (k in elm) elm[k] = obj[k];
-            else elm.setAttribute(k, obj[k]);
+            if (k in elm) {
+              if (k === 'className' && elm[k].length > 0) obj[k] = `${elm[k]} ${obj[k]}`;
+              elm[k] = obj[k];
+            } else elm.setAttribute(k, obj[k]);
           }
         }
       }
       if (f instanceof Function) f(elm);
-
-
 
     }
 
@@ -631,10 +602,6 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
       return this._es_proxy_;
     }
 
-    /**
-     * 
-     * @param {(S: VanillaJSDialogMethods) => void} setupFunc 
-     */
     constructor() {
       /** @type {VanillaJSDialog} */
       this._es_proxy_ = new Proxy({}, S.esProxyHandler);
@@ -672,7 +639,6 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
     }
     onShow() {
       // TODO
-
     }
 
     show() {
@@ -713,19 +679,12 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
           this.es.backdrop = backdrop;
         }
 
-
-
         document.documentElement.classList.add('vjsd-dialog-shown');
         this.es.backdrop.classList.add('vjsd-backdrop-visible');
 
-
-
-
       }
 
-
       dialog.classList.toggle('vjsd-dark', this.isDarkTheme());
-
 
       this.onShow();
 
@@ -821,17 +780,16 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
         // return  VJSD.iconBuilder(VJSD.ce('span', {className:'vjsd-icon'}), iconTag);
       },
 
-      title(text) {
-        return S.ce('span', { className: 'vjsd-title', textContent: text });
+      title(text, ...args) {
+        const elm = S.ce('span', { className: 'vjsd-title', textContent: text });
+        S.st(elm, args);
+        return elm;
       },
 
       buttonIcon(iconTag, ...args) {
         const icon = S.widgets.icon(iconTag);
-
         icon.classList.add('vjsd-buttonicon');
-
         S.st(icon, args)
-
         return icon;
       },
 
@@ -842,17 +800,13 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
           className: 'vjsd-checkbox-label'
         });
 
-
         let elmInput = S.ce('input', {
           className
         }, {
           'type': 'checkbox'
         })
 
-        elmLabel.append(
-          elmInput,
-          text + ""
-        )
+        elmLabel.append(elmInput,text + "")
 
         if (f instanceof Function) f(elmLabel, elmInput);
 
@@ -872,29 +826,25 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
           'type': 'radio'
         });
 
-        elmLabel.append(elmInput, text);
+        elmLabel.append(elmInput, text + "");
 
         if (f instanceof Function) f(elmLabel, elmInput);
 
         return elmLabel;
       },
 
-
       button(text, ...args) {
         let elm = S.ce('div', { className: 'vjsd-button', textContent: text });
-
-
         S.st(elm, args)
-
         return elm;
       },
+
       space() {
         return S.ce('div', { className: 'vjsd-space' });
       },
 
       span(text) {
         return S.ce('span', { className: 'vjsd-span', textContent: text });
-
       },
 
       inputText(f) {
@@ -905,57 +855,11 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
         });
         if (f instanceof Function) f(elm);
         return elm
-      },
-
-
-
-      // custom widgets
-      iconTextClear(f) {
-
-
-        let container = S.ce("div", { className: "vjsd-custom-widget vjsd-hflex vjsd-gap-3" });
-
-        let labelSpan = this.span('Input:');
-        let inputText = this.inputText((elm) => {
-          elm.classList.add('vjsd-flex-fill')
-        });
-        let xmark = this.buttonIcon('xmark');
-        xmark.setAttribute('vjsd-clickable', '.xmark1')
-        container.append(
-          labelSpan,
-          inputText,
-          xmark
-        );
-
-        if (f instanceof Function) f(container, labelSpan, inputText, xmark);
-
-        return container
-      },
-      textbox(f) {
-        let elm = S.ce('textarea', { className: 'vjsd-custom-widget sample-textbox' })
-
-        if (f instanceof Function) f(elm);
-        return elm;
-
-      },
-      checkboxSelectionDisplay(f) {
-
-        let elm = S.ce('div', { className: 'vjsd-custom-widget' })
-
-
-        if (f instanceof Function) f(elm);
-        return elm;
-
       }
-
 
     };
 
-
-
   }
-
-
 
   VanillaJSDialog.VanillaJSDialogMethods = VanillaJSDialogMethods;
 
