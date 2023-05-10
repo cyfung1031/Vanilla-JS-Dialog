@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-/* version: 0.1.1 */
+/* version: 0.1.2 */
 const VanillaJSDialog = (function pluginVanillaJSDialog() {
   'strict';
 
@@ -400,12 +400,44 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
 
 
 
+  /*
+
+  class Derived extends Base {
+   
+    constructor() {
+      super();
+      this.field = 1;
+      console.log("Derived constructor:", this.field);
+      this.field = 2;
+    }
+  }
+
+  */
+
   // let __ceId__ =0;
   // const  __ceIdStore__ = new WeakMap();
 
   // This is just for common utils.
   class VanillaJSDialogMethods {
-    __widgets__ = {};
+    constructor() {
+      /**
+       * @type {object} __widgets__ - store of widgets (private)
+       */
+      this.__widgets__ = {};
+
+      this.esProxyHandler = {
+        get(obj, prop) {
+          const elm = obj[prop];
+          if (elm instanceof HTMLElement) {
+            return elm;
+          }
+          console.warn(`Element '${prop}' is not yet assigned.`);
+          return null;
+        }
+      };
+    }
+
+
     /**
      * @returns { Object.<string, (...args?: ( onElementGenerated|string|number)[])=>HTMLElement > }
      */
@@ -457,31 +489,31 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
 
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js#sha512=qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==
  
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+< script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" >< /script >
 
       */
-     const elements = urls.map(url => {
-      let elm = document.createElement('link');
-      elm.setAttribute('rel', 'stylesheet');
-      elm.setAttribute('href', url);
-      if(url.includes('#')){
-        let idx1 = url.indexOf('#');
-        let idx2 = url.indexOf('=',idx1);
-        if(idx1 > 1 && idx2 === idx1+7){
-          let s = url.substring(idx1+1, idx2);
-          switch(s){
-            case 'sha256':
-            case 'sha384':
-            case 'sha512':
-              elm.setAttribute('integrity', `${s}-${url.substring(idx2+1)}`);
+      const elements = urls.map(url => {
+        let elm = document.createElement('link');
+        elm.setAttribute('rel', 'stylesheet');
+        elm.setAttribute('href', url);
+        if (url.includes('#')) {
+          let idx1 = url.indexOf('#');
+          let idx2 = url.indexOf('=', idx1);
+          if (idx1 > 1 && idx2 === idx1 + 7) {
+            let s = url.substring(idx1 + 1, idx2);
+            switch (s) {
+              case 'sha256':
+              case 'sha384':
+              case 'sha512':
+                elm.setAttribute('integrity', `${s}-${url.substring(idx2 + 1)}`);
+            }
           }
         }
-      }
-      elm.setAttribute('crossorigin', 'anonymous');
-      elm.setAttribute('referrerpolicy', 'no-referrer');
-      // document.head.appendChild(elm);
-      return elm;
-    })
+        elm.setAttribute('crossorigin', 'anonymous');
+        elm.setAttribute('referrerpolicy', 'no-referrer');
+        // document.head.appendChild(elm);
+        return elm;
+      })
       document.head.append(...elements);
       return urls.length === 1 ? elements[0] : elements;
 
@@ -566,43 +598,28 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
       if (f instanceof Function) f(elm);
 
     }
-
-
-    esProxyHandler = {
-      get(obj, prop) {
-        const elm = obj[prop];
-        if (elm instanceof HTMLElement) {
-          return elm;
-        }
-        console.warn(`Element '${prop}' is not yet assigned.`);
-        return null;
-      }
-    }
   }
 
   const S = new VanillaJSDialogMethods();
 
   class VanillaJSDialog {
     // CAUTION: DO NOT CACHE ELEMENTS IN THE NESTED FUNCTIONS.
-    S = S;
-    shown = false;
-
-    /** @type {Function | null} */
-    backdropClickHandler = null;
-    backdrop = '';
-
-    /** @type {Map<string, Function>} */
-    clicks2 = new Map(); /* the string key is just an arbitrary id for the click handler */
-
-
-    _es_proxy_ = null;
-
-    /** @returns {Object.<string, HTMLElement?>} */
-    get es() {
-      return this._es_proxy_;
-    }
-
     constructor() {
+      this.S = S;
+      this.shown = false;
+
+      /**
+       * @type {Function | null} backdropClickHandler - the function handler for backdrop click
+       */
+      this.backdropClickHandler = null;
+      this.backdrop = '';
+
+      /** @type {Map<string, Function>} */
+      this.clicks2 = new Map(); /* the string key is just an arbitrary id for the click handler */
+
+      /** @type {Function?} */
+      this.clickHandler = null;
+
       /** @type {VanillaJSDialog} */
       this._es_proxy_ = new Proxy({}, S.esProxyHandler);
       if (!S.firstDialogCreated) this.onFirstCreation();
@@ -613,6 +630,11 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
         this.es.dialog.addEventListener('click', this.clickHandler, true);
       }
       S.firstDialogCreated = true;
+    }
+
+    /** @returns {Object.<string, HTMLElement?>} */
+    get es() {
+      return this._es_proxy_;
     }
 
     onFirstCreation() {
@@ -727,9 +749,6 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
       return false;
     }
 
-    /** @type {Function?} */
-    clickHandler = null;
-
     createClickHandler() {
       const clicks2 = this.clicks2;
       return (evt) => {
@@ -806,7 +825,7 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
           'type': 'checkbox'
         })
 
-        elmLabel.append(elmInput,text + "")
+        elmLabel.append(elmInput, text + "")
 
         if (f instanceof Function) f(elmLabel, elmInput);
 
@@ -870,5 +889,3 @@ const VanillaJSDialog = (function pluginVanillaJSDialog() {
   // module.exports = VanillaJSDialog
   return VanillaJSDialog;
 })();
-
-
