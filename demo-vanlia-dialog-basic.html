@@ -1,0 +1,140 @@
+<html>
+<head>
+<script src="https://update.greasyfork.org/scripts/465421/1188332/Vanilla%20JS%20Dialog.js"></script>
+</head>
+<body>
+
+</body>
+<script>
+
+
+
+let dialog = null;
+
+function createDialog() {
+  // 1. 自定義對話框主題樣式
+  const _themeProps_ = {
+    dialogBackgroundColor: '#f6f6f6',
+    dialogBackgroundColorDark: '#23252a',
+    backdropColor: '#b5b5b568',
+    textColor: '#111111',
+    textColorDark: '#f0f3f4',
+    zIndex: 60000,
+    fontSize: '10pt',
+    dialogMinWidth: '32px',
+    dialogMinHeight: '24px',
+  };
+
+  // 2. 定義自定義對話框類 (Defining a Custom Dialog Class)
+  class VJSD extends VanillaJSDialog {
+    // 設定主題屬性
+    get themeProps() {
+      return _themeProps_;
+    }
+
+    // 確定深色主題
+    isDarkTheme() {
+      return document.documentElement.hasAttribute('dark');
+    }
+
+    // 顯示前的操作 (Actions Before Display)
+    onBeforeShow() {
+      const es = this.es;
+    }
+
+    // 首次創建時 (On First Creation)
+    onFirstCreation() {
+      const S = this.S;
+      S.importCSS(
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css'
+      );
+      this.themeSetup();
+    }
+
+    // 初始化對話框 (Dialog Initialization)
+    init() {
+      const S = this.S;
+      const es = this.es;
+
+      es.dialog = S.ce('div', { className: 'vjsd-dialog' }, { '__vjsd__': '' });
+      es.dialog.append(
+        es.header = S.ce('div', { className: 'vjsd-dialog-header vjsd-hflex' }),
+        es.body = S.ce('div', { className: 'vjsd-dialog-body vjsd-gap-2 vjsd-overscroll-none vjsd-vflex' }),
+        es.footer = S.ce('div', { className: 'vjsd-dialog-footer vjsd-hflex' })
+      );
+
+      // 添加標題與按鈕 (Adding Title and Buttons)
+      es.header.append(
+        S.widgets.icon('circle-info'),
+        S.widgets.title('Tabview Youtube - Change Default Tab', { className: 'vjsd-flex-fill' }),
+        S.widgets.buttonIcon('square-xmark', { 'vjsd-clickable': '#dialogXmark' })
+      );
+
+
+      es.body.append(
+        S.widgets.labeledRadio(
+          'vjsd-checkbox1 vjsd-checkbox-tick',
+          'Info',
+          (elmLabel, elmInput) => {
+            elmInput.name = 'tabview-tab-default';
+            elmInput.value = '#tab-info';
+            es.checkbox1 = elmInput;
+            elmLabel.style.fontSize = '200%'; // 放大字体 // Increase font size
+          }
+        ),
+        S.widgets.labeledRadio(
+          'vjsd-checkbox1 vjsd-checkbox-tick',
+          'Comment',
+          (elmLabel, elmInput) => {
+            elmInput.name = 'tabview-tab-default';
+            elmInput.value = '#tab-comments';
+            es.checkbox2 = elmInput;
+            elmLabel.style.fontSize = '200%';
+          }
+        ),
+        S.widgets.labeledRadio(
+          'vjsd-checkbox1 vjsd-checkbox-tick',
+          'Video',
+          (elmLabel, elmInput) => {
+            elmInput.name = 'tabview-tab-default';
+            elmInput.value = '#tab-videos';
+            es.checkbox3 = elmInput;
+            elmLabel.style.fontSize = '200%';
+          }
+        ),
+        (es.checkboxSelectionDisplay = S.ce('div', { className: 'vjsd-custom-widget' }))
+      );
+
+      es.footer.append(
+        S.widgets.button('Clear', { 'vjsd-clickable': '#clear' }),
+        S.widgets.button('Cancel', { 'vjsd-clickable': '#cancel' }),
+        S.widgets.button('Confirm', { 'vjsd-clickable': '#confirm' })
+      );
+
+      document.body.appendChild(es.dialog);
+    }
+  }
+
+  VJSD.setup1();
+  return new VJSD();
+}
+
+// 創建觸發按鈕以顯示對話框 (Creating a Button to Trigger the Dialog)
+const button = document.body.appendChild(document.createElement('button'));
+button.textContent = 'Click Me';
+button.style.position = 'fixed';
+button.style.left = '30px';
+button.style.top = '30px';
+button.style.fontSize = '48px'
+button.style.padding = '24px'
+
+button.onclick = function() {
+  dialog = dialog || createDialog();
+  dialog.show();
+}
+
+
+
+</script>
+
+</html>
